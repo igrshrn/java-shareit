@@ -80,7 +80,9 @@ class ItemControllerTest extends AbstractControllerTest {
         ));
 
         performRequest(POST, "/items", itemJson)
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message.error").value("Required request header 'X-Sharer-User-Id' for method parameter type Long is not present"));
     }
 
     @Test

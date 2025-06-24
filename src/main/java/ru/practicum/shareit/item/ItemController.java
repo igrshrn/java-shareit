@@ -8,6 +8,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/items")
@@ -20,33 +21,39 @@ public class ItemController {
     }
 
     @PostMapping
-    public Item createItem(
+    public ItemDto createItem(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @Valid @RequestBody ItemDto itemDto) {
-        return itemService.createItem(userId, itemDto);
+        return ItemMapper.toItemDto(itemService.createItem(userId, itemDto));
     }
 
     @PatchMapping("/{itemId}")
-    public Item updateItem(
+    public ItemDto updateItem(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId,
             @RequestBody ItemDto itemDto) {
-        return itemService.updateItem(userId, itemId, itemDto);
+        return ItemMapper.toItemDto(itemService.updateItem(userId, itemId, itemDto));
     }
 
     @GetMapping("/{itemId}")
-    public Item getItemById(@PathVariable Long itemId) {
-        return itemService.getItemById(itemId);
+    public ItemDto getItemById(@PathVariable Long itemId) {
+        return ItemMapper.toItemDto(itemService.getItemById(itemId));
     }
 
     @GetMapping
-    public List<Item> getItemsByOwner(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getItemsByOwner(userId);
+    public List<ItemDto> getItemsByOwner(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        List<Item> items = itemService.getItemsByOwner(userId);
+        return items.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/search")
-    public List<Item> searchItems(@RequestParam String text) {
-        return itemService.searchItems(text);
+    public List<ItemDto> searchItems(@RequestParam String text) {
+        List<Item> items = itemService.searchItems(text);
+        return items.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
 }

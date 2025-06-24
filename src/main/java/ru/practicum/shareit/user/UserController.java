@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 @RestController
@@ -18,18 +17,18 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody UserDto userDto) {
-        return userService.createUser(userDto);
+    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
+        return UserMapper.toUserDto(userService.createUser(userDto));
     }
 
     @PatchMapping("/{id}")
-    public User updateUser(@PathVariable long id, @RequestBody UserDto userDto) {
-        return userService.updateUser(id, userDto);
+    public UserDto updateUser(@PathVariable long id, @RequestBody UserDto userDto) {
+        return UserMapper.toUserDto(userService.updateUser(id, userDto));
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable long id) {
-        return userService.getUserById(id);
+    public UserDto getUserById(@PathVariable long id) {
+        return UserMapper.toUserDto(userService.getUserById(id));
     }
 
     @DeleteMapping("/{id}")
