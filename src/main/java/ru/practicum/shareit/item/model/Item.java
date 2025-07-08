@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.shareit.booking.model.Booking;
@@ -39,14 +38,11 @@ public class Item {
     private ItemRequest request;
 
     @Transient
-    @JsonIgnore
     private Booking lastBooking;
 
     @Transient
-    @JsonIgnore
     private Booking nextBooking;
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
     private List<Comment> comments;
 }

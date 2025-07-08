@@ -2,9 +2,11 @@ package ru.practicum.shareit.user.dto;
 
 import jakarta.validation.constraints.Email;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class UserUpdateDto {
     private String name;

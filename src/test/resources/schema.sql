@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS item_request
 (
     id         BIGSERIAL PRIMARY KEY,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    text       TEXT    NOT NULL,
+    text       TEXT   NOT NULL,
     item_id    BIGINT NOT NULL,
-    author_id  BIGINT  NOT NULL,
+    author_id  BIGINT NOT NULL,
 
     FOREIGN KEY (author_id) REFERENCES users (id),
     FOREIGN KEY (item_id) REFERENCES items (id)

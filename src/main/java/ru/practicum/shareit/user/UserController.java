@@ -22,18 +22,18 @@ public class UserController {
 
     @PostMapping
     public UserDto createUser(@Valid @RequestBody UserCreateDto userCreateDto) {
-        return UserMapper.toUserDto(userService.createUser(userCreateDto));
+        return UserMapper.INSTANCE.toUserDto(userService.createUser(userCreateDto));
     }
 
     @PatchMapping("/{id}")
     public UserDto updateUser(@PathVariable long id,
                               @Valid @RequestBody UserUpdateDto userUpdateDto) {
-        return UserMapper.toUserDto(userService.updateUser(id, userUpdateDto));
+        return UserMapper.INSTANCE.toUserDto(userService.updateUser(id, userUpdateDto));
     }
 
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable long id) {
-        return UserMapper.toUserDto(userService.getUserById(id));
+        return UserMapper.INSTANCE.toUserDto(userService.getUserById(id));
     }
 
     @DeleteMapping("/{id}")
