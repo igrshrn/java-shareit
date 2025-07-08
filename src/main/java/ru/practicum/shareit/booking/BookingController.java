@@ -21,27 +21,27 @@ public class BookingController {
     @PostMapping
     public BookingDto createBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                     @Valid @RequestBody BookingCreateDto bookingCreateDto) {
-        return BookingMapper.toBookingDto(bookingService.createBooking(userId, bookingCreateDto));
+        return BookingMapper.INSTANCE.toBookingDto(bookingService.createBooking(userId, bookingCreateDto));
     }
 
     @PatchMapping("/{bookingId}")
     public BookingDto updateBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                     @PathVariable Long bookingId,
                                     @RequestParam boolean approved) {
-        return BookingMapper.toBookingDto(bookingService.updateBooking(userId, bookingId, approved));
+        return BookingMapper.INSTANCE.toBookingDto(bookingService.updateBooking(userId, bookingId, approved));
     }
 
     @GetMapping("/{bookingId}")
     public BookingDto getBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                  @PathVariable Long bookingId) {
-        return BookingMapper.toBookingDto(bookingService.getBooking(userId, bookingId));
+        return BookingMapper.INSTANCE.toBookingDto(bookingService.getBooking(userId, bookingId));
     }
 
     @GetMapping
     public List<BookingDto> getBookingsByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
                                               @RequestParam(defaultValue = "ALL") BookingState state) {
         return bookingService.getBookingsByUser(userId, state).stream()
-                .map(BookingMapper::toBookingDto)
+                .map(BookingMapper.INSTANCE::toBookingDto)
                 .toList();
     }
 
@@ -49,7 +49,7 @@ public class BookingController {
     public List<BookingDto> getBookingsByOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                @RequestParam(defaultValue = "ALL") BookingState state) {
         return bookingService.getBookingsByOwner(userId, state).stream()
-                .map(BookingMapper::toBookingDto)
+                .map(BookingMapper.INSTANCE::toBookingDto)
                 .toList();
     }
 }

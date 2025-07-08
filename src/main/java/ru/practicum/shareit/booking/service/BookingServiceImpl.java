@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.model.Booking;
@@ -21,6 +22,7 @@ import java.util.List;
 import static ru.practicum.shareit.booking.model.BookingStatus.*;
 
 @Service
+@Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
@@ -33,6 +35,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public Booking createBooking(long userId, BookingCreateDto bookingCreateDto) {
         User user = userService.getUserById(userId);
         Item item = itemService.getItemById(bookingCreateDto.getItemId());
@@ -41,7 +44,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NotAvailableException("Вещь недоступна для бронирования");
         }
 
-        Booking booking = BookingMapper.toBooking(bookingCreateDto);
+        Booking booking = BookingMapper.INSTANCE.toBooking(bookingCreateDto);
         booking.setUser(user);
         booking.setItem(item);
         booking.setStatus(WAITING);
@@ -60,6 +63,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public Booking updateBooking(long userId, long bookingId, boolean approved) {
         Booking booking = getBooking(userId, bookingId);
         if (userId != booking.getItem().getOwner().getId()) {

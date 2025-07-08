@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -24,6 +25,7 @@ import java.util.List;
 import static ru.practicum.shareit.booking.model.BookingState.PAST;
 
 @Service
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -40,15 +42,17 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Item createItem(long userId, ItemCreateDto itemCreateDto) {
         User user = userService.getUserById(userId);
-        Item item = ItemMapper.toItem(itemCreateDto);
+        Item item = ItemMapper.INSTANCE.toItem(itemCreateDto);
         item.setOwner(user);
 
         return itemRepository.save(item);
     }
 
     @Override
+    @Transactional
     public Item updateItem(long userId, long itemId, ItemDto itemDto) {
         userService.getUserById(userId);
         Item item = getItemById(itemId);
@@ -84,6 +88,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Comment createComment(long userId, long itemId, CommentCreateDto commentCreateDto) {
         User user = userService.getUserById(userId);
         Item item = getItemById(itemId);
