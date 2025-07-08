@@ -39,7 +39,7 @@ class UserControllerTest extends AbstractControllerTest {
     @Test
     void updateUser() throws Exception {
         User user = createUser();
-
+        System.out.println(user);
         String updatedUserJson = createJson(Map.of(
                 "name", "Updated Name",
                 "email", "updated@example.com"

@@ -1,8 +1,11 @@
 package ru.practicum.shareit.utils;
 
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dto.UserDto;
 
+import java.time.LocalDateTime;
 import java.util.Random;
 
 public class RandomUtils {
@@ -30,6 +33,14 @@ public class RandomUtils {
                 .name(getRandomWord(10))
                 .description(getRandomWord(50))
                 .available(RANDOM.nextBoolean())
+                .build();
+    }
+
+    public static BookingDto getBooking(Long itemId, LocalDateTime start, LocalDateTime end) {
+        return BookingDto.builder()
+                .item(Item.builder().id(itemId).build())
+                .start(start)
+                .end(end)
                 .build();
     }
 
