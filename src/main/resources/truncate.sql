@@ -1,0 +1,6 @@
+TRUNCATE TABLE users;
+TRUNCATE TABLE requests;
+TRUNCATE TABLE items;
+TRUNCATE TABLE item_request;
+TRUNCATE TABLE bookings;
+TRUNCATE TABLE comments;

@@ -3,6 +3,9 @@ package ru.practicum.shareit.item;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentCreateDto;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemCreateDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
@@ -23,8 +26,8 @@ public class ItemController {
     @PostMapping
     public ItemDto createItem(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @Valid @RequestBody ItemDto itemDto) {
-        return ItemMapper.toItemDto(itemService.createItem(userId, itemDto));
+            @Valid @RequestBody ItemCreateDto itemCreateDto) {
+        return ItemMapper.toItemDto(itemService.createItem(userId, itemCreateDto));
     }
 
     @PatchMapping("/{itemId}")
@@ -54,6 +57,13 @@ public class ItemController {
         return items.stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
+    }
+
+    @PostMapping("{itemId}/comment")
+    public CommentDto createComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                    @PathVariable Long itemId,
+                                    @RequestBody CommentCreateDto commentCreateDto) {
+        return ItemMapper.toCommentDto(itemService.createComment(userId, itemId, commentCreateDto));
     }
 
 }

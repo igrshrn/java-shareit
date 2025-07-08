@@ -16,6 +16,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -23,11 +27,12 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.utils.HttpMethodEnum;
 import ru.practicum.shareit.utils.RandomUtils;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.utils.HttpMethodEnum.POST;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -67,6 +72,20 @@ public abstract class AbstractControllerTest {
         return Map.of(
                 "name", userDto.getName(),
                 "email", userDto.getEmail()
+        );
+    }
+
+    protected Map<String, Object> bookingDtoToMap(BookingDto bookingDto) {
+        return Map.of(
+                "itemId", bookingDto.getItem().getId(),
+                "start", bookingDto.getStart().toString(),
+                "end", bookingDto.getEnd().toString()
+        );
+    }
+
+    protected Map<String, Object> commentDtoToMap(CommentDto commentDto) {
+        return Map.of(
+                "text", commentDto.getText()
         );
     }
 
@@ -154,7 +173,7 @@ public abstract class AbstractControllerTest {
         UserDto userDto = RandomUtils.getRandomUser();
         String jsonUserDto = createJson(userDtoToMap(userDto));
 
-        String response = performRequest(HttpMethodEnum.POST, "/users", jsonUserDto)
+        String response = performRequest(POST, "/users", jsonUserDto)
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(response);
@@ -170,7 +189,7 @@ public abstract class AbstractControllerTest {
         ItemDto itemDto = RandomUtils.getRandomItem(available);
         String jsonItemDto = createJson(itemDtoToMap(itemDto));
 
-        String response = performRequest(HttpMethodEnum.POST, "/items", jsonItemDto, headers)
+        String response = performRequest(POST, "/items", jsonItemDto, headers)
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(response);
@@ -182,4 +201,26 @@ public abstract class AbstractControllerTest {
                 .available(jsonNode.get("available").asBoolean())
                 .build();
     }
+
+    protected Booking createBooking(MultiValueMap<String, String> headers,
+                                    Long itemId,
+                                    LocalDateTime start,
+                                    LocalDateTime end) throws Exception {
+        BookingDto bookingDto = RandomUtils.getBooking(itemId, start, end);
+        String jsonBookingDto = createJson(bookingDtoToMap(bookingDto));
+
+        String response = performRequest(POST, "/bookings", jsonBookingDto, headers)
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode jsonNode = objectMapper.readTree(response);
+
+        return Booking.builder()
+                .id(jsonNode.get("id").asLong())
+                .start(LocalDateTime.parse(jsonNode.get("start").asText()))
+                .end(LocalDateTime.parse(jsonNode.get("end").asText()))
+                .status(BookingStatus.valueOf(jsonNode.get("status").asText()))
+                .build();
+    }
+
 }

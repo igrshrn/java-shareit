@@ -4,11 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import ru.practicum.shareit.AbstractControllerTest;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.utils.RandomUtils;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -163,7 +165,7 @@ class ItemControllerTest extends AbstractControllerTest {
     @Test
     void searchItemsWithEmptyRequest() throws Exception {
         User user = createUser();
-        Item item = createItem(createHeaders(X_SHARER_USER_ID, user.getId().toString()), true);
+        createItem(createHeaders(X_SHARER_USER_ID, user.getId().toString()), true);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         MultiValueMap<String, String> headers = createHeaders(X_SHARER_USER_ID, user.getId().toString());
@@ -172,5 +174,35 @@ class ItemControllerTest extends AbstractControllerTest {
         performRequest(GET, "/items/search", params, headers)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void createComment() throws Exception {
+        // Создание владельца вещи
+        User owner = createUser();
+        MultiValueMap<String, String> ownerHeaders = createHeaders(X_SHARER_USER_ID, owner.getId().toString());
+        Item item = createItem(ownerHeaders, true);
+
+        // Создание арендатора
+        User booker = createUser();
+        MultiValueMap<String, String> bookerHeaders = createHeaders(X_SHARER_USER_ID, booker.getId().toString());
+
+        LocalDateTime start = LocalDateTime.now().plusSeconds(2);
+        LocalDateTime end = LocalDateTime.now().plusSeconds(6);
+
+        // Бронирование от 2 пользователя
+        Booking booking = createBooking(bookerHeaders, item.getId(), start, end);
+
+        // Подтверждаем бронирование от владельца
+        performRequest(PATCH, "/bookings/" + booking.getId() + "?approved=true", ownerHeaders)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+
+        Thread.sleep(10000);
+
+        String commentText = "Комментарий";
+        performRequest(POST, "/items/" + item.getId() + "/comment", createJson(Map.of("text", commentText)), bookerHeaders)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.text").value(commentText));
     }
 }
