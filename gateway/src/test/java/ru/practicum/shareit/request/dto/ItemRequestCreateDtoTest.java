@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request.dto;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.BaseDtoTest;
@@ -8,21 +9,16 @@ import ru.practicum.shareit.BaseDtoTest;
 import java.io.IOException;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class ItemRequestCreateDtoTest extends BaseDtoTest<ItemRequestCreateDto> {
 
     @Test
     void testSerialize() throws IOException {
-        String description = "Description";
         ItemRequestCreateDto dto = ItemRequestCreateDto.builder()
-                .description(description)
+                .description("Description")
                 .build();
 
         JsonContent<ItemRequestCreateDto> result = json.write(dto);
-
-        assertThat(result).extractingJsonPathStringValue("@.description")
-                .isEqualTo(description);
+        assertJsonField(result, "@.description", "Description");
     }
 
     @Test
@@ -31,8 +27,7 @@ class ItemRequestCreateDtoTest extends BaseDtoTest<ItemRequestCreateDto> {
                 .description("Valid description")
                 .build();
 
-        Set<ConstraintViolation<ItemRequestCreateDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertNullFieldsValid(dto);
     }
 
     @Test
@@ -42,10 +37,7 @@ class ItemRequestCreateDtoTest extends BaseDtoTest<ItemRequestCreateDto> {
                 .build();
 
         Set<ConstraintViolation<ItemRequestCreateDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("не должно быть пустым");
+        assertViolationHasAnnotation(violations, NotBlank.class);
     }
 
     @Test
@@ -55,9 +47,6 @@ class ItemRequestCreateDtoTest extends BaseDtoTest<ItemRequestCreateDto> {
                 .build();
 
         Set<ConstraintViolation<ItemRequestCreateDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("не должно быть пустым");
+        assertViolationHasAnnotation(violations, NotBlank.class);
     }
 }

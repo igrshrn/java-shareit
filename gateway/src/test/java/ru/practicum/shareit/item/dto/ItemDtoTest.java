@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
-import jakarta.validation.ConstraintViolation;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.BaseDtoTest;
@@ -10,10 +11,6 @@ import ru.practicum.shareit.user.model.User;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ItemDtoTest extends BaseDtoTest<ItemDto> {
     @Test
@@ -26,9 +23,9 @@ class ItemDtoTest extends BaseDtoTest<ItemDto> {
 
         JsonContent<ItemDto> result = json.write(dto);
 
-        assertThat(result).extractingJsonPathStringValue("@.name").isEqualTo(dto.getName());
-        assertThat(result).extractingJsonPathStringValue("@.description").isEqualTo(dto.getDescription());
-        assertThat(result).extractingJsonPathBooleanValue("@.available").isEqualTo(dto.getAvailable());
+        assertJsonField(result, "@.name", "Item");
+        assertJsonField(result, "@.description", "Description");
+        assertJsonField(result, "@.available", true);
     }
 
     @Test
@@ -39,31 +36,18 @@ class ItemDtoTest extends BaseDtoTest<ItemDto> {
                 .available(true)
                 .build();
 
-        Set<ConstraintViolation<ItemDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertNullFieldsValid(dto);
     }
 
     @Test
     void testValidationFail() {
         ItemDto dto = ItemDto.builder()
-                .name("")
-                .description("")
+                .name(null)
+                .description(null)
                 .available(null)
                 .build();
 
-        Set<ConstraintViolation<ItemDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(3);
-
-        Set<String> messages = violations.stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.toSet());
-
-        assertThat(messages).containsExactlyInAnyOrder(
-                "Наименование не может быть пустым",
-                "Описание не может быть пустым",
-                "Доступность аренды должна быть указана"
-        );
+        assertValidationFailsWithEmptyFields(dto, 3, NotBlank.class, NotBlank.class, NotNull.class);
     }
 
     @Test
@@ -80,7 +64,6 @@ class ItemDtoTest extends BaseDtoTest<ItemDto> {
                 .comments(List.of(new CommentForItemDto()))
                 .build();
 
-        Set<ConstraintViolation<ItemDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertNullFieldsValid(dto);
     }
 }

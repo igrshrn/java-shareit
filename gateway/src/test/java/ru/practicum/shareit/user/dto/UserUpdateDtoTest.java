@@ -1,14 +1,13 @@
 package ru.practicum.shareit.user.dto;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.constraints.Email;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.BaseDtoTest;
 
 import java.io.IOException;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class UserUpdateDtoTest extends BaseDtoTest<UserUpdateDto> {
     @Test
@@ -20,10 +19,8 @@ class UserUpdateDtoTest extends BaseDtoTest<UserUpdateDto> {
 
         JsonContent<UserUpdateDto> result = json.write(dto);
 
-        assertThat(result).extractingJsonPathStringValue("@.name")
-                .isEqualTo(dto.getName());
-        assertThat(result).extractingJsonPathStringValue("@.email")
-                .isEqualTo(dto.getEmail());
+        assertJsonField(result, "@.name", "Updated Name");
+        assertJsonField(result, "@.email", "updated@example.com");
     }
 
     @Test
@@ -33,8 +30,7 @@ class UserUpdateDtoTest extends BaseDtoTest<UserUpdateDto> {
                 .email("user@example.com")
                 .build();
 
-        Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertNullFieldsValid(dto);
     }
 
     @Test
@@ -44,8 +40,7 @@ class UserUpdateDtoTest extends BaseDtoTest<UserUpdateDto> {
                 .email(null)
                 .build();
 
-        Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertNullFieldsValid(dto);
     }
 
     @Test
@@ -55,10 +50,7 @@ class UserUpdateDtoTest extends BaseDtoTest<UserUpdateDto> {
                 .build();
 
         Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("Email должен быть в правильном формате");
+        assertViolationHasAnnotation(violations, Email.class);
     }
 
     @Test
@@ -69,9 +61,7 @@ class UserUpdateDtoTest extends BaseDtoTest<UserUpdateDto> {
 
         JsonContent<UserUpdateDto> result = json.write(dto);
 
-        assertThat(result).extractingJsonPathStringValue("@.email")
-                .isEqualTo("only-email@example.com");
-        assertThat(result).extractingJsonPathStringValue("@.name")
-                .isNull();
+        assertJsonField(result, "@.email", "only-email@example.com");
+        assertJsonField(result, "@.name", null);
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.BaseDtoTest;
@@ -8,19 +9,15 @@ import ru.practicum.shareit.BaseDtoTest;
 import java.io.IOException;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class CommentCreateDtoTest extends BaseDtoTest<CommentCreateDto> {
     @Test
     void testSerialize() throws IOException {
-        String text = "Comment";
         CommentCreateDto dto = CommentCreateDto.builder()
-                .text(text)
+                .text("Comment")
                 .build();
 
         JsonContent<CommentCreateDto> result = json.write(dto);
-
-        assertThat(result).extractingJsonPathStringValue("@.text").isEqualTo(text);
+        assertJsonField(result, "@.text", "Comment");
     }
 
     @Test
@@ -29,27 +26,25 @@ class CommentCreateDtoTest extends BaseDtoTest<CommentCreateDto> {
                 .text("Comment")
                 .build();
 
-        Set<ConstraintViolation<CommentCreateDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertNullFieldsValid(dto);
     }
 
     @Test
     void testValidationFail() {
-        CommentCreateDto dto = new CommentCreateDto("");
-        Set<ConstraintViolation<CommentCreateDto>> violations = validator.validate(dto);
+        CommentCreateDto dto = CommentCreateDto.builder()
+                .text("")
+                .build();
 
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("не должно быть пустым");
+        Set<ConstraintViolation<CommentCreateDto>> violations = validator.validate(dto);
+        assertViolationHasAnnotation(violations, NotBlank.class);
     }
 
     @Test
     void testNullTextValidation() {
-        CommentCreateDto dto = new CommentCreateDto(null);
+        CommentCreateDto dto = CommentCreateDto.builder()
+                .text(null)
+                .build();
         Set<ConstraintViolation<CommentCreateDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("не должно быть пустым");
+        assertViolationHasAnnotation(violations, NotBlank.class);
     }
 }

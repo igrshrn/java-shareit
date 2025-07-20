@@ -1,15 +1,14 @@
 package ru.practicum.shareit.user.dto;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.BaseDtoTest;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class UserCreateDtoTest extends BaseDtoTest<UserCreateDto> {
 
@@ -22,10 +21,8 @@ class UserCreateDtoTest extends BaseDtoTest<UserCreateDto> {
 
         JsonContent<UserCreateDto> result = json.write(dto);
 
-        assertThat(result).extractingJsonPathStringValue("@.name")
-                .isEqualTo(dto.getName());
-        assertThat(result).extractingJsonPathStringValue("@.email")
-                .isEqualTo(dto.getEmail());
+        assertJsonField(result, "@.name", "Name");
+        assertJsonField(result, "@.email", "user@example.com");
     }
 
     @Test
@@ -35,8 +32,7 @@ class UserCreateDtoTest extends BaseDtoTest<UserCreateDto> {
                 .email("valid@example.com")
                 .build();
 
-        Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertNullFieldsValid(dto);
     }
 
     @Test
@@ -46,18 +42,7 @@ class UserCreateDtoTest extends BaseDtoTest<UserCreateDto> {
                 .email("")
                 .build();
 
-        Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(2);
-
-        Set<String> messages = violations.stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.toSet());
-
-        assertThat(messages).containsExactlyInAnyOrder(
-                "не должно быть пустым",
-                "Email не может быть пустым или содержать пробелы"
-        );
+        assertValidationFailsWithEmptyFields(dto, 2, NotBlank.class, NotBlank.class);
     }
 
     @Test
@@ -68,10 +53,7 @@ class UserCreateDtoTest extends BaseDtoTest<UserCreateDto> {
                 .build();
 
         Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("Email должен быть в правильном формате");
+        assertViolationHasAnnotation(violations, Email.class);
     }
 
     @Test
@@ -81,17 +63,6 @@ class UserCreateDtoTest extends BaseDtoTest<UserCreateDto> {
                 .email(null)
                 .build();
 
-        Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
-
-        assertThat(violations).hasSize(2);
-
-        Set<String> messages = violations.stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.toSet());
-
-        assertThat(messages).containsExactlyInAnyOrder(
-                "не должно быть пустым",
-                "Email не может быть пустым или содержать пробелы"
-        );
+        assertValidationFailsWithEmptyFields(dto, 2, NotBlank.class, NotBlank.class);
     }
 }
