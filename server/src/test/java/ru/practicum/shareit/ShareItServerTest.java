@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-class ShareItTests {
+class ShareItServerTest {
     @Autowired
     private ApplicationContext context;
 
@@ -31,5 +31,4 @@ class ShareItTests {
     void testCustomProperty() {
         assertEquals("off", bannerMode);
     }
-
 }

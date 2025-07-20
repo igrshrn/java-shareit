@@ -13,7 +13,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper
 public interface ItemMapper {
@@ -33,7 +32,7 @@ public interface ItemMapper {
         return request;
     }
 
-    @Mapping(target = "comments", source = "comments")
+    @Mapping(target = "itemRequest", source = "request")
     ItemDto toItemDto(Item item);
 
     @Mapping(target = "item", ignore = true)
@@ -52,6 +51,6 @@ public interface ItemMapper {
         }
         return comments.stream()
                 .map(this::toCommentForItemDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

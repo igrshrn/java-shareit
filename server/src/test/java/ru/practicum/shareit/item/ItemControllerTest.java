@@ -183,9 +183,81 @@ class ItemControllerTest extends AbstractControllerTest {
 
         Thread.sleep(10000);
 
-        String commentText = "Комментарий";
+        String commentText = "Comment";
         performRequest(POST, "/items/" + item.getId() + "/comment", createJson(Map.of("text", commentText)), bookerHeaders)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.text").value(commentText));
     }
+
+    @Test
+    void createCommentWithoutBookingShouldFail() throws Exception {
+        User owner = createUser();
+        MultiValueMap<String, String> ownerHeaders = createHeaders(X_SHARER_USER_ID, owner.getId().toString());
+        Item item = createItem(ownerHeaders, true);
+
+        User otherUser = createUser();
+        MultiValueMap<String, String> otherUserHeaders = createHeaders(X_SHARER_USER_ID, otherUser.getId().toString());
+
+        String commentText = "Комментарий";
+        performRequest(POST, "/items/" + item.getId() + "/comment",
+                createJson(Map.of("text", commentText)), otherUserHeaders)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"));
+    }
+
+    @Test
+    void createItemWithRequestTest() throws Exception {
+        User requester = createUser();
+        MultiValueMap<String, String> requesterHeaders = createHeaders(X_SHARER_USER_ID, requester.getId().toString());
+
+        // Создам запрос на вещь
+        String requestJson = createJson(Map.of(
+                "description", "Нужен молоток"
+        ));
+        String requestResponse = performRequest(POST, "/requests", requestJson, requesterHeaders)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Long requestId = objectMapper.readTree(requestResponse).path("id").asLong();
+
+        // Создаем пользователя, который будет владельцем вещи
+        User owner = createUser();
+        MultiValueMap<String, String> ownerHeaders = createHeaders(X_SHARER_USER_ID, owner.getId().toString());
+
+        // Создаем вещь в ответ на запрос
+        String itemJson = createJson(Map.of(
+                "name", "Name",
+                "description", "Description",
+                "available", true,
+                "requestId", requestId
+        ));
+
+        performRequest(POST, "/items", itemJson, ownerHeaders)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Name"))
+                .andExpect(jsonPath("$.description").value("Description"))
+                .andExpect(jsonPath("$.available").value(true))
+                .andExpect(jsonPath("$.itemRequest").value(requestId));
+    }
+
+    @Test
+    void createItemWithoutRequestTest() throws Exception {
+        User user = createUser();
+        MultiValueMap<String, String> headers = createHeaders(X_SHARER_USER_ID, user.getId().toString());
+
+        ItemDto itemDto = RandomUtils.getRandomItem();
+        itemDto.setItemRequest(null);
+
+        String itemDtoJson = createJson(itemDtoToMap(itemDto));
+
+        performRequest(POST, "/items", itemDtoJson, headers)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value(itemDto.getName()))
+                .andExpect(jsonPath("$.description").value(itemDto.getDescription()))
+                .andExpect(jsonPath("$.available").value(itemDto.getAvailable()))
+                .andExpect(jsonPath("$.requestId").doesNotExist());
+    }
+
 }

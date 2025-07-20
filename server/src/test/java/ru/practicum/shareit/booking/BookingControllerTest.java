@@ -55,6 +55,32 @@ class BookingControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void updateBookingByNonOwnerShouldFail() throws Exception {
+        // Создаем владельца вещи
+        User owner = createUser();
+        MultiValueMap<String, String> ownerHeaders = createHeaders(X_SHARER_USER_ID, owner.getId().toString());
+        Item item = createItem(ownerHeaders, true);
+
+        // Создаем пользователя, который будет бронировать
+        User booker = createUser();
+        MultiValueMap<String, String> bookerHeaders = createHeaders(X_SHARER_USER_ID, booker.getId().toString());
+
+        // Создаем бронирование
+        LocalDateTime start = LocalDateTime.now().plusDays(1);
+        LocalDateTime end = LocalDateTime.now().plusDays(2);
+        Booking booking = createBooking(bookerHeaders, item.getId(), start, end);
+
+        // Создаем третьего пользователя (не владельца и не бронирующего)
+        User otherUser = createUser();
+        MultiValueMap<String, String> otherUserHeaders = createHeaders(X_SHARER_USER_ID, otherUser.getId().toString());
+
+        // Пытаемся подтвердить бронирование от имени третьего пользователя
+        performRequest(PATCH, "/bookings/" + booking.getId() + "?approved=true", otherUserHeaders)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"));
+    }
+
+    @Test
     void getBooking() throws Exception {
         User owner = createUser();
         MultiValueMap<String, String> ownerHeaders = createHeaders(X_SHARER_USER_ID, owner.getId().toString());
