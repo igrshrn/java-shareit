@@ -2,6 +2,7 @@ package ru.practicum.shareit.request.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
@@ -13,6 +14,7 @@ import ru.practicum.shareit.user.service.UserService;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class ItemRequestServiceImpl implements ItemRequestService {
     private final UserService userService;
     private final ItemRequestRepository itemRequestRepository;
@@ -24,6 +26,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
+    @Transactional
     public ItemRequest createItemRequest(long userId, ItemRequestCreateDto itemRequestCreateDto) {
         User user = userService.getUserById(userId);
 
