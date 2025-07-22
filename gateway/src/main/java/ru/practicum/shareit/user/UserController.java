@@ -1,14 +1,17 @@
 package ru.practicum.shareit.user;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserCreateDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 
 @RestController
 @RequestMapping(path = "/users")
+@Validated
 public class UserController {
     private final UserClient userClient;
 
@@ -23,18 +26,18 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> updateUser(@PathVariable long id,
-                                             @Valid @RequestBody UserUpdateDto userUpdateDto) {
+    public ResponseEntity<Object> updateUser(@PathVariable @Positive long id,
+                                             @RequestBody @Valid UserUpdateDto userUpdateDto) {
         return userClient.updateUser(id, userUpdateDto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUserById(@PathVariable long id) {
+    public ResponseEntity<Object> getUserById(@PathVariable @Positive long id) {
         return userClient.getUserById(id);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable long id) {
+    public void deleteUser(@PathVariable @Positive long id) {
         userClient.deleteUser(id);
     }
 

@@ -87,6 +87,14 @@ class UserControllerTest extends AbstractControllerTest<UserClient> {
     }
 
     @Test
+    void updateUser_whenIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(patch("/users/0")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getUserById_whenValid_thenStatusOk() throws Exception {
         mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk());
@@ -95,11 +103,23 @@ class UserControllerTest extends AbstractControllerTest<UserClient> {
     }
 
     @Test
+    void getUserById_whenIdIsNegative_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(get("/users/-1"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void deleteUser_whenValid_thenStatusOk() throws Exception {
         mockMvc.perform(delete("/users/1"))
                 .andExpect(status().isOk());
 
         verify(client).deleteUser(eq(1L));
+    }
+
+    @Test
+    void deleteUser_whenIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(delete("/users/0"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

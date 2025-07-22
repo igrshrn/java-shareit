@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ItemRequestController.class)
@@ -63,6 +64,15 @@ class ItemRequestControllerTest extends AbstractControllerTest<ItemRequestClient
     }
 
     @Test
+    void createItemRequest_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(post("/requests")
+                        .header("X-Sharer-User-Id", 0)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemRequestCreateDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getUserRequests_whenValid_thenStatusOk() throws Exception {
         mockMvc.perform(get("/requests")
                         .header("X-Sharer-User-Id", 1L))
@@ -84,6 +94,13 @@ class ItemRequestControllerTest extends AbstractControllerTest<ItemRequestClient
                 .andExpect(status().isOk());
 
         verify(client).getRequestById(eq(1L), eq(1L));
+    }
+
+    @Test
+    void getRequestById_whenRequestIdIsNegative_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(get("/requests/-1")
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

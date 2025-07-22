@@ -140,11 +140,43 @@ class BookingControllerTest extends AbstractControllerTest<BookingClient> {
     }
 
     @Test
+    void createBooking_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        BookingCreateDto dto = BookingCreateDto.builder()
+                .itemId(1L)
+                .start(LocalDateTime.now().plusMinutes(1))
+                .end(LocalDateTime.now().plusMinutes(2))
+                .build();
+
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", 0)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void updateBooking_whenMissingApprovedParam_thenStatusBadRequest() throws Exception {
         mockMvc.perform(patch("/bookings/{bookingId}", 1L)
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void updateBooking_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(patch("/bookings/{bookingId}", 1L)
+                        .header("X-Sharer-User-Id", 0)
+                        .param("approved", "true"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateBooking_whenBookingIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(patch("/bookings/0")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("approved", "true"))
+                .andExpect(status().isBadRequest());
+    }
+
 
     @Test
     void getBookingsByUser_whenInvalidState_thenStatusBadRequest() throws Exception {
@@ -161,6 +193,27 @@ class BookingControllerTest extends AbstractControllerTest<BookingClient> {
     }
 
     @Test
+    void getBooking_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(get("/bookings/{bookingId}", 1L)
+                        .header("X-Sharer-User-Id", 0))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getBooking_whenBookingIdIsNegative_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(get("/bookings/-1")
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getBookingByOwner_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(get("/bookings/owner", 1L)
+                        .header("X-Sharer-User-Id", 0))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void handleException_shouldReturnInternalServerError() throws Exception {
         when(client.createBooking(anyLong(), any(BookingCreateDto.class)))
                 .thenThrow(new RuntimeException("Test exception"));
@@ -171,4 +224,5 @@ class BookingControllerTest extends AbstractControllerTest<BookingClient> {
                         .content(objectMapper.writeValueAsString(bookingCreateDto)))
                 .andExpect(status().isInternalServerError());
     }
+
 }

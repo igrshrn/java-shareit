@@ -66,6 +66,15 @@ class ItemControllerTest extends AbstractControllerTest<ItemClient> {
     }
 
     @Test
+    void createItem_whenUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(post("/items")
+                        .header("X-Sharer-User-Id", 0)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemCreateDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void createItem_whenInvalidData_thenStatusBadRequest() throws Exception {
         ItemCreateDto invalidDto = ItemCreateDto.builder()
                 .name("")
@@ -89,6 +98,15 @@ class ItemControllerTest extends AbstractControllerTest<ItemClient> {
                 .andExpect(status().isOk());
 
         verify(client).updateItem(eq(1L), eq(1L), any(ItemDto.class));
+    }
+
+    @Test
+    void updateItem_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(patch("/items/0")
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemDto)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -136,6 +154,22 @@ class ItemControllerTest extends AbstractControllerTest<ItemClient> {
         mockMvc.perform(post("/items/1/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commentCreateDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createComment_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(post("/items/-1/comment")
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentCreateDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getItemsByOwner_whenXSharerUserIdIsZero_thenStatusBadRequest() throws Exception {
+        mockMvc.perform(get("/items")
+                        .header("X-Sharer-User-Id", 0))
                 .andExpect(status().isBadRequest());
     }
 
